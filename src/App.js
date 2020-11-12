@@ -1,26 +1,50 @@
-import React from "react";
+// useEffect é usado para carregar a lista de repositórios
+import React, { useEffect, useState }  from "react";
+import api from './services/api';
 
 import "./styles.css";
 
 function App() {
+
+  // Local para salvar os repositórios
+  const [repositories, setRepositories] = useState([]);
+
+  useEffect(() =>{
+    // Chamada à api
+    api.get('repositories').then(response => {
+      setRepositories(response.data);
+    });
+  }, []);
+  
   async function handleAddRepository() {
-    // TODO
+    // TAdição de um novo repositório
+    const response = await api.post('repositories', {
+      title: 'desafio1',
+      url: 'https://github.com/ftaguchi/desafio1.git',
+      techs: ['Node.js']
+    })
+    //
+    setRepositories([ ... repositories, response.data ]);
   }
 
   async function handleRemoveRepository(id) {
-    // TODO
+    await api.delete (`repositories/${id}`);
+
+    setRepositories(repositories.filter(
+      repository => repository.id != id
+    ))
   }
 
+  // Exibição de respositórios em tela
   return (
     <div>
       <ul data-testid="repository-list">
-        <li>
-          Repositório 1
-
-          <button onClick={() => handleRemoveRepository(1)}>
-            Remover
-          </button>
-        </li>
+        {repositories.map(repository => (
+          <li key={repository.id}>
+            {repository.title}
+            <button onClick={() => handleRemoveRepository(repository.id)}> Remover </button>
+          </li>
+        ))}
       </ul>
 
       <button onClick={handleAddRepository}>Adicionar</button>
